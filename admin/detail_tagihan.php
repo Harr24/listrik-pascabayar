@@ -2,198 +2,137 @@
 session_start();
 require '../config/database.php';
 
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../login.php');
+// Keamanan: Cek sesi admin dan ID tagihan
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin' || !isset($_GET['id'])) {
+    header('Location: login.php');
     exit;
 }
 
-if (!isset($_GET['id'])) {
-    echo "ID Tagihan tidak ditemukan.";
-    exit;
-}
+$id_tagihan = $_GET['id'];
 
-$id_tagihan = intval($_GET['id']);
-
-// Proses jika tombol "Set Lunas" diklik
-if (isset($_POST['set_lunas'])) {
-    $update = mysqli_query($koneksi, "
-        UPDATE tagihan 
-        SET status = 'lunas', tanggal_bayar = CURDATE()
-        WHERE id_tagihan = $id_tagihan
-    ");
-
-    if ($update) {
-        header("Location: detail_tagihan.php?id=$id_tagihan");
-        exit;
-    } else {
-        echo "<div class='alert alert-danger'>Gagal mengubah status.</div>";
-    }
-}
-
-// Ambil data tagihan
+// Query untuk mengambil data tagihan yang sangat detail
 $query = "SELECT 
-            tagihan.id_tagihan,
-            tagihan.total_bayar,
-            tagihan.status,
-            tagihan.tanggal_bayar,
-            penggunaan.bulan,
-            penggunaan.tahun,
-            penggunaan.meter_awal,
-            penggunaan.meter_akhir,
-            users.nama_lengkap
+            tagihan.*,
+            penggunaan.*,
+            pelanggan.nomor_meter,
+            users.nama_lengkap,
+            tarif.golongan_tarif,
+            tarif.daya,
+            tarif.tarif_per_kwh,
+            pembayaran.tanggal_bayar,
+            pembayaran.biaya_admin,
+            pembayaran.total_akhir,
+            pembayaran.bukti_bayar
           FROM tagihan
           JOIN penggunaan ON tagihan.id_penggunaan = penggunaan.id_penggunaan
           JOIN pelanggan ON penggunaan.id_pelanggan = pelanggan.id_pelanggan
           JOIN users ON pelanggan.id_user = users.id_user
-          WHERE tagihan.id_tagihan = $id_tagihan
-          LIMIT 1";
+          JOIN tarif ON pelanggan.id_tarif = tarif.id_tarif
+          LEFT JOIN pembayaran ON tagihan.id_tagihan = pembayaran.id_tagihan
+          WHERE tagihan.id_tagihan = ?";
 
-$result = mysqli_query($koneksi, $query);
-$data = mysqli_fetch_assoc($result);
+$stmt = mysqli_prepare($koneksi, $query);
+mysqli_stmt_bind_param($stmt, "i", $id_tagihan);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$detail = mysqli_fetch_assoc($result);
 
-if (!$data) {
-    echo "Data tagihan tidak ditemukan.";
+if (!$detail) {
+    header('Location: tagihan.php?status=notfound');
     exit;
 }
 
-$jumlah_meter = $data['meter_akhir'] - $data['meter_awal'];
-
 require '../includes/header.php';
 ?>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    .invoice-box {
-        max-width: 800px;
-        margin: auto;
-        padding: 30px;
-        border: 1px solid #eee;
-        border-radius: 12px;
-        font-size: 16px;
-        line-height: 24px;
-        font-family: 'Segoe UI', sans-serif;
-        color: #333;
-        background: #fff;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .invoice-box h2 {
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .invoice-box table {
-        width: 100%;
-        line-height: inherit;
-        text-align: left;
-    }
-
-    .invoice-box table td {
-        padding: 8px 5px;
-        vertical-align: top;
-    }
-
-    .invoice-box table tr.heading td {
-        background: #f5f5f5;
-        border-bottom: 1px solid #ddd;
-        font-weight: 600;
-    }
-
-    .status-lunas {
-        color: green;
-        font-weight: bold;
-    }
-
-    .status-belum {
-        color: red;
-        font-weight: bold;
-    }
-
-    .status-diproses {
-        color: orange;
-        font-weight: bold;
-    }
-
+    /* CSS khusus untuk menyembunyikan tombol saat print */
     @media print {
-
-        .btn,
-        nav,
-        footer,
-        form {
-            display: none;
-        }
-
-        body {
-            background: white;
-        }
-
-        .invoice-box {
-            box-shadow: none;
-            border: none;
+        .no-print {
+            display: none !important;
         }
     }
 </style>
 
-<div class="invoice-box mt-4">
-    <h2>Detail Tagihan</h2>
-    <table>
-        <tr>
-            <td><strong>ID Tagihan:</strong> <?= $data['id_tagihan']; ?></td>
-            <td align="right"><strong>Periode:</strong>
-                <?= date("F Y", mktime(0, 0, 0, $data['bulan'], 1, $data['tahun'])); ?></td>
-        </tr>
-    </table>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top no-print">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.php">⚡ ADMIN PANEL</a>
+    </div>
+</nav>
 
-    <hr>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <h2 class="mb-0">Detail Tagihan</h2>
+        <div>
+            <a href="tagihan.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Kembali</a>
+            <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer-fill"></i> Cetak</button>
+        </div>
+    </div>
 
-    <table>
-        <tr>
-            <td><strong>Nama Pelanggan</strong></td>
-            <td>: <?= htmlspecialchars($data['nama_lengkap']); ?></td>
-        </tr>
-        <tr>
-            <td><strong>Meter Awal</strong></td>
-            <td>: <?= $data['meter_awal']; ?></td>
-        </tr>
-        <tr>
-            <td><strong>Meter Akhir</strong></td>
-            <td>: <?= $data['meter_akhir']; ?></td>
-        </tr>
-        <tr>
-            <td><strong>Pemakaian</strong></td>
-            <td>: <?= $jumlah_meter; ?> kWh</td>
-        </tr>
-        <tr>
-            <td><strong>Total Tagihan</strong></td>
-            <td>: <strong>Rp <?= number_format($data['total_bayar'], 2, ',', '.'); ?></strong></td>
-        </tr>
-        <tr>
-            <td><strong>Status</strong></td>
-            <td>:
-                <?php
-                if ($data['status'] == 'lunas') {
-                    echo "<span class='status-lunas'>Lunas</span>";
-                } elseif ($data['status'] == 'diproses') {
-                    echo "<span class='status-diproses'>Diproses</span>";
-                } else {
-                    echo "<span class='status-belum'>Belum Lunas</span>";
-                    echo '<form method="post" class="mt-2 d-inline">';
-                    echo '<button type="submit" name="set_lunas" class="btn btn-sm btn-success">Set Lunas Sekarang</button>';
-                    echo '</form>';
-                }
-                ?>
-            </td>
-        </tr>
-        <?php if ($data['tanggal_bayar'] && $data['status'] == 'lunas'): ?>
-            <tr>
-                <td><strong>Tanggal Pembayaran</strong></td>
-                <td>: <?= date("d F Y", strtotime($data['tanggal_bayar'])); ?></td>
-            </tr>
-        <?php endif; ?>
-    </table>
-
-    <div class="mt-4">
-        <a href="tagihan.php" class="btn btn-secondary">← Kembali</a>
-        <button class="btn btn-primary" onclick="window.print()">🖨 Cetak PDF</button>
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h5 class="mb-0">Tagihan #<?= htmlspecialchars($detail['id_tagihan']); ?></h5>
+                    <small class="text-muted">Periode:
+                        <?= date("F Y", mktime(0, 0, 0, $detail['bulan'], 1, $detail['tahun'])); ?></small>
+                </div>
+                <div>
+                    <?php
+                    if ($detail['status'] == 'belum_lunas') {
+                        echo '<span class="badge bg-danger fs-6">Belum Lunas</span>';
+                    } elseif ($detail['status'] == 'diproses') {
+                        echo '<span class="badge bg-warning text-dark fs-6">Diproses</span>';
+                    } else {
+                        echo '<span class="badge bg-success fs-6">Lunas</span>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted">PELANGGAN</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Nama:</strong> <?= htmlspecialchars($detail['nama_lengkap']); ?></li>
+                        <li><strong>Nomor Meter:</strong> <?= htmlspecialchars($detail['nomor_meter']); ?></li>
+                        <li><strong>Golongan:</strong> <?= htmlspecialchars($detail['golongan_tarif']); ?> /
+                            <?= number_format($detail['daya']); ?> VA</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">PENGGUNAAN</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Meter Awal:</strong> <?= htmlspecialchars($detail['meter_awal']); ?> kWh</li>
+                        <li><strong>Meter Akhir:</strong> <?= htmlspecialchars($detail['meter_akhir']); ?> kWh</li>
+                        <li><strong>Total Pemakaian:</strong> <?= htmlspecialchars($detail['jumlah_meter']); ?> kWh</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">RINCIAN TAGIHAN</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Tarif / kWh:</strong> Rp
+                            <?= number_format($detail['tarif_per_kwh'], 2, ',', '.'); ?></li>
+                        <li><strong>Total Tagihan:</strong> <span class="fw-bold fs-5">Rp
+                                <?= number_format($detail['total_bayar'], 2, ',', '.'); ?></span></li>
+                    </ul>
+                </div>
+                <?php if ($detail['status'] != 'belum_lunas' && $detail['bukti_bayar']): ?>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">PEMBAYARAN</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Tanggal Bayar:</strong>
+                                <?= date('d F Y, H:i', strtotime($detail['tanggal_bayar'])); ?></li>
+                            <li><strong>Total Transfer:</strong> Rp
+                                <?= number_format($detail['total_akhir'], 2, ',', '.'); ?></li>
+                            <li><strong>Bukti:</strong> <a href="../uploads/bukti_pembayaran/<?= $detail['bukti_bayar']; ?>"
+                                    target="_blank">Lihat Bukti Pembayaran</a></li>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 </div>
 
