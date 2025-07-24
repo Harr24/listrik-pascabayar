@@ -1,2 +1,0 @@
-# listrik-pascabayar
-listrik
