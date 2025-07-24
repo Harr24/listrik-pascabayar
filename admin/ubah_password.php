@@ -43,38 +43,83 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 require '../includes/header.php';
 ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
         <a class="navbar-brand" href="index.php">⚡ ADMIN PANEL</a>
     </div>
 </nav>
 
 <div class="container mt-4">
-    <h2>Ubah Password</h2>
-    <hr>
-    <?php if (isset($error)): ?>
-        <div class="alert alert-danger"><?= $error; ?></div>
-    <?php endif; ?>
-    <?php if (isset($sukses)): ?>
-        <div class="alert alert-success"><?= $sukses; ?></div>
-    <?php endif; ?>
-    <form action="ubah_password.php" method="POST">
-        <div class="mb-3">
-            <label for="password_lama" class="form-label">Password Lama</label>
-            <input type="password" class="form-control" id="password_lama" name="password_lama" required>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>Ubah Password</h4>
+                </div>
+                <div class="card-body">
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($error); ?></div>
+                    <?php endif; ?>
+                    <?php if (isset($sukses)): ?>
+                        <div class="alert alert-success"><?= htmlspecialchars($sukses); ?></div>
+                    <?php endif; ?>
+                    <form action="ubah_password.php" method="POST">
+                        <div class="mb-3">
+                            <label for="password_lama" class="form-label">Password Lama</label>
+                            <input type="password" class="form-control" id="password_lama" name="password_lama"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password_baru" class="form-label">Password Baru</label>
+                            <input type="password" class="form-control" id="password_baru" name="password_baru"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="konfirmasi_password" class="form-label">Konfirmasi Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="konfirmasi_password"
+                                    name="konfirmasi_password" onkeyup="validatePassword()" required>
+                                <span class="input-group-text" id="password_match_status"></span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Ubah
+                                Password</button>
+                            <a href="index.php" class="btn btn-secondary">Kembali</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="password_baru" class="form-label">Password Baru</label>
-            <input type="password" class="form-control" id="password_baru" name="password_baru" required>
-        </div>
-        <div class="mb-3">
-            <label for="konfirmasi_password" class="form-label">Konfirmasi Password Baru</label>
-            <input type="password" class="form-control" id="konfirmasi_password" name="konfirmasi_password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Ubah Password</button>
-        <a href="index.php" class="btn btn-secondary">Kembali ke Dashboard</a>
-    </form>
+    </div>
 </div>
+
+<script>
+    function validatePassword() {
+        // Ambil nilai dari kedua input password
+        const passwordBaru = document.getElementById('password_baru').value;
+        const konfirmasiPassword = document.getElementById('konfirmasi_password').value;
+
+        // Ambil elemen span untuk menampilkan status
+        const statusIcon = document.getElementById('password_match_status');
+
+        // Jika kolom konfirmasi kosong, jangan tampilkan apa-apa
+        if (konfirmasiPassword === '') {
+            statusIcon.innerHTML = '';
+            return;
+        }
+
+        // Bandingkan nilainya
+        if (passwordBaru === konfirmasiPassword) {
+            // Jika cocok, tampilkan centang hijau
+            statusIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+        } else {
+            // Jika tidak cocok, tampilkan silang merah
+            statusIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+        }
+    }
+</script>
 
 <?php require '../includes/footer.php'; ?>
