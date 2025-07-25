@@ -61,7 +61,7 @@ Aplikasi web sederhana yang dibangun menggunakan PHP Native dan database MySQL u
 
 ### Login Admin
 
-Untuk mendapatkan akses login sebagai admin, silakan hubungi:
+Untuk mendapatkan akses login sebagai admin dan mendapatkan file databse sql nya, silakan hubungi:
 
 - **WhatsApp:** `081326740142`
 - **Biaya:** Rp 20.000 (via GoPay)
