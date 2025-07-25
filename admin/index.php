@@ -26,10 +26,17 @@ require '../includes/header.php';
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
     <div class="container-fluid">
+        <button class="navbar-toggler me-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar"
+            aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
         <a class="navbar-brand" href="index.php">⚡ ADMIN PANEL</a>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
@@ -90,7 +97,8 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TOTAL PELANGGAN</h5>
                                     <h3 class="fw-bold"><?= $total_pelanggan; ?> Orang</h3>
-                                </div><i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                                <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -102,7 +110,8 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TAGIHAN BELUM LUNAS</h5>
                                     <h3 class="fw-bold"><?= $total_tagihan_belum_lunas; ?> Tagihan</h3>
-                                </div><i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                                <i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -171,7 +180,6 @@ require '../includes/header.php';
             .catch(error => console.error('Error fetching chart data:', error));
     });
 </script>
-
 
 <?php
 // Panggil footer
