@@ -1,8 +1,12 @@
-<?php require 'includes/header.php'; ?>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="assets/css/style.css">
+<?php
+// Panggil koneksi database di sini agar semua query bisa berjalan
+require 'config/database.php';
+require 'includes/header.php';
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+// Ambil 4 event terbaru dari database
+$query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_posting DESC LIMIT 4");
+?>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.php">⚡ PT Harrindo Daya Tama</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -39,58 +43,61 @@
     </div>
 </div>
 
-<div class="container text-center py-4">
+<div class="container text-center py-5">
     <h4 class="text-muted">Telah Dipercaya oleh</h4>
     <h2 class="display-5 fw-bold" id="jumlah-pengguna">...</h2>
     <h4 class="text-muted">Pengguna Terdaftar</h4>
 </div>
 
-<div class="container text-center py-4">
-    <h4 class="text-muted mb-3">Layanan Daya Tersedia</h4>
-    <div id="layanan-list" class="d-flex justify-content-center gap-3">
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Event & Berita Terkini</h2>
+        <p class="lead text-muted">Ikuti perkembangan dan informasi terbaru dari kami.</p>
+    </div>
+    <div class="row g-4">
+        <?php if (isset($query_events) && mysqli_num_rows($query_events) > 0): ?>
+            <?php while ($event = mysqli_fetch_assoc($query_events)): ?>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm card-event">
+                        <img src="uploads/events/<?= htmlspecialchars($event['gambar']); ?>" class="card-img-top"
+                            alt="<?= htmlspecialchars($event['judul']); ?>">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title"><?= htmlspecialchars($event['judul']); ?></h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                <?= date('d F Y', strtotime($event['tanggal_posting'])); ?></p>
+                            <a href="event_detail.php?id=<?= $event['id_event']; ?>" class="stretched-link"></a>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="event_detail.php?id=<?= $event['id_event']; ?>"
+                                class="btn btn-outline-primary w-100">Selengkapnya</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p class="text-center">Belum ada event atau berita untuk ditampilkan.</p>
+        <?php endif; ?>
     </div>
 </div>
 
 
 <div class="bg-light">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2>Layanan Kami</h2>
-            <p class="lead text-muted">Fitur yang kami sediakan untuk kemudahan Anda.</p>
-        </div>
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <div class="info-box">
-                    <i class="bi bi-credit-card-2-front-fill display-3 text-primary"></i>
-                    <h4 class="mt-3">Pembayaran Mudah</h4>
-                    <p>Bayar tagihan Anda kapan saja dan di mana saja dengan berbagai metode pembayaran.</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="info-box">
-                    <i class="bi bi-graph-up-arrow display-3 text-primary"></i>
-                    <h4 class="mt-3">Monitoring Real-time</h4>
-                    <p>Lacak riwayat pemakaian listrik Anda setiap bulan secara transparan.</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="info-box">
-                    <i class="bi bi-bell-fill display-3 text-primary"></i>
-                    <h4 class="mt-3">Notifikasi Tagihan</h4>
-                    <p>Dapatkan pengingat otomatis saat tagihan baru Anda terbit.</p>
-                </div>
-            </div>
+    <div class="container text-center py-5">
+        <h4 class="text-muted mb-3">Layanan Daya Tersedia</h4>
+        <div id="layanan-list" class="d-flex flex-wrap justify-content-center gap-3">
         </div>
     </div>
 </div>
 
-<footer class="bg-dark text-white text-center p-3">
-    <p class="mb-0">&copy; 2025 PT Harrindo Daya Tama. All Rights Reserved.</p>
+<footer class="bg-dark text-white text-center p-4">
+    <div class="container">
+        <p class="mb-0">&copy; <?= date('Y'); ?> PT Harrindo Daya Tama. All Rights Reserved.</p>
+    </div>
 </footer>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // --- Fungsi untuk jumlah pengguna ---
+        // Fungsi untuk jumlah pengguna
         function updateJumlahPengguna() {
             fetch('jumlah_pengguna.php')
                 .then(response => response.json())
@@ -98,32 +105,31 @@
                     const jumlahFormatted = new Intl.NumberFormat('id-ID').format(data.total);
                     document.getElementById('jumlah-pengguna').textContent = jumlahFormatted;
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => console.error('Error fetching user count:', error));
         }
 
-        // --- FUNGSI BARU: Untuk menampilkan layanan daya ---
+        // Fungsi untuk menampilkan layanan daya
         function updateLayananTersedia() {
             fetch('get_layanan.php')
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('layanan-list');
-                    container.innerHTML = ''; // Kosongkan container dulu
+                    container.innerHTML = '';
                     data.layanan.forEach(daya => {
-                        // Buat elemen span untuk setiap daya
                         const span = document.createElement('span');
-                        span.className = 'badge bg-secondary fs-6';
+                        span.className = 'badge bg-dark fs-6';
                         span.textContent = new Intl.NumberFormat('id-ID').format(daya) + ' VA';
                         container.appendChild(span);
                     });
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => console.error('Error fetching services:', error));
         }
 
-        // --- Panggil semua fungsi saat halaman dimuat ---
+        // Panggil semua fungsi saat halaman dimuat
         updateJumlahPengguna();
         updateLayananTersedia();
 
-        // --- Blok untuk background slider ---
+        // Blok untuk background slider
         const slides = document.querySelectorAll('.hero-slide');
         let currentSlide = 0;
         if (slides.length > 0) {

@@ -70,6 +70,8 @@ require '../includes/header.php';
                                 class="bi bi-check-circle-fill icon"></i> Konfirmasi Pembayaran</a></li>
                     <li class="nav-item mb-1"><a class="nav-link" href="laporan.php"><i
                                 class="bi bi-journal-text icon"></i> Laporan</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link" href="event.php"><i class="bi bi-newspaper icon"></i>
+                            Manajemen Event</a></li>
                 </ul>
             </div>
         </nav>

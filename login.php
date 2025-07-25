@@ -96,11 +96,15 @@ require 'includes/header.php';
     }
 
     .card-footer {
-        /* Menggunakan flexbox untuk menata link */
-        display: flex;
-        justify-content: space-between;
+        text-align: center;
         margin-top: 20px;
         font-size: 0.9em;
+    }
+
+    .card-footer-links {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
     }
 
     .card-footer a {
@@ -148,8 +152,11 @@ require 'includes/header.php';
         </form>
 
         <div class="card-footer">
-            <a href="register.php">Belum punya akun? Daftar</a>
-            <a href="lupa_sandi.php">Lupa Sandi?</a>
+            <div class="card-footer-links">
+                <a href="register.php">Belum punya akun? Daftar</a>
+                <a href="lupa_sandi.php">Lupa Sandi?</a>
+            </div>
+            <a href="index.php">← Kembali ke Halaman Utama</a>
         </div>
     </div>
 </div>
