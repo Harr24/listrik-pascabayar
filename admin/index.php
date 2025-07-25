@@ -14,7 +14,7 @@ $query_pelanggan = mysqli_query($koneksi, "SELECT COUNT(id_pelanggan) as total_p
 $data_pelanggan = mysqli_fetch_assoc($query_pelanggan);
 $total_pelanggan = $data_pelanggan['total_pelanggan'];
 
-// PERBAIKAN QUERY: Menghitung jumlah tagihan yang belum lunas dengan benar
+// Menghitung jumlah tagihan yang belum lunas
 $query_tagihan = mysqli_query($koneksi, "SELECT COUNT(id_tagihan) as total_tagihan FROM tagihan WHERE status = 'belum_lunas'");
 $data_tagihan = mysqli_fetch_assoc($query_tagihan);
 $total_tagihan_belum_lunas = $data_tagihan['total_tagihan'];
@@ -68,6 +68,8 @@ require '../includes/header.php';
                                 class="bi bi-file-earmark-text-fill icon"></i> Manajemen Tagihan</a></li>
                     <li class="nav-item mb-1"><a class="nav-link" href="pembayaran.php"><i
                                 class="bi bi-check-circle-fill icon"></i> Konfirmasi Pembayaran</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link" href="laporan.php"><i
+                                class="bi bi-journal-text icon"></i> Laporan</a></li>
                 </ul>
             </div>
         </nav>
@@ -129,16 +131,14 @@ require '../includes/header.php';
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: serverData.labels,      // Label bulan dari PHP
-                        datasets: serverData.datasets  // Seluruh dataset (per daya) dari PHP
+                        labels: serverData.labels,
+                        datasets: serverData.datasets
                     },
                     options: {
                         scales: {
-                            x: {
-                                stacked: true, // Membuat batang bertumpuk
-                            },
+                            x: { stacked: true },
                             y: {
-                                stacked: true, // Membuat batang bertumpuk
+                                stacked: true,
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function (value) {
