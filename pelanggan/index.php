@@ -70,7 +70,7 @@ require '../includes/header.php';
                         <h6>Total Bayar</h6>
                         <h3 class="fw-bold">Rp <?= number_format($tagihan_terbaru['total_bayar'] + 2500, 0, ',', '.'); ?>
                         </h3>
-                        <small class="text-light">*Sudah termasuk biaya admin</small>
+                        <small class="text-muted">*Sudah termasuk biaya admin</small>
                     </div>
                     <div class="col-md-4 text-md-end">
                         <a href="bayar.php?id=<?= $tagihan_terbaru['id_tagihan']; ?>" class="btn btn-lg btn-success">
@@ -107,16 +107,17 @@ require '../includes/header.php';
                             <td class="text-center">
                                 <?php
                                 if ($row['status'] == 'belum_lunas') {
-                                    echo '<span class="badge rounded-pill bg-danger">Belum Lunas</span><br>';
+                                    echo '<span class="badge rounded-pill bg-danger badge-status">Belum Lunas</span><br>';
                                     echo '<a href="bayar.php?id=' . $row['id_tagihan'] . '" class="btn btn-sm btn-outline-success mt-1"><i class="bi bi-wallet2"></i> Bayar</a>';
                                 } elseif ($row['status'] == 'diproses') {
-                                    echo '<span class="badge rounded-pill bg-warning text-dark">Diproses</span>';
+                                    echo '<span class="badge rounded-pill bg-warning text-dark badge-status">Diproses</span>';
                                 } else {
-                                    echo '<span class="badge rounded-pill bg-success">Lunas</span>';
+                                    echo '<span class="badge rounded-pill bg-success badge-status">Lunas</span>';
                                 }
                                 ?>
                                 <br>
-                                <a href="detail_pembayaran.php?id=<?= $row['id_tagihan']; ?>"
+                                <!-- PERUBAHAN LINK DI SINI -->
+                                <a href="detail_tagihan.php?id=<?= $row['id_tagihan']; ?>"
                                     class="btn btn-sm btn-outline-primary mt-1" title="Lihat Detail">
                                     <i class="bi bi-file-earmark-text"></i> Detail
                                 </a>
