@@ -96,8 +96,11 @@ require 'includes/header.php';
     }
 
     .card-footer {
-        text-align: center;
-        margin-top: 15px;
+        /* Menggunakan flexbox untuk menata link */
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        font-size: 0.9em;
     }
 
     .card-footer a {
@@ -116,6 +119,10 @@ require 'includes/header.php';
 
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['status']) && $_GET['status'] == 'sukses_reset'): ?>
+            <div class="alert alert-success">Password Anda berhasil diubah! Silakan login.</div>
         <?php endif; ?>
 
         <form action="login.php" method="POST">
@@ -142,6 +149,7 @@ require 'includes/header.php';
 
         <div class="card-footer">
             <a href="register.php">Belum punya akun? Daftar</a>
+            <a href="lupa_sandi.php">Lupa Sandi?</a>
         </div>
     </div>
 </div>

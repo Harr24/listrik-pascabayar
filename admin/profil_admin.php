@@ -27,10 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Update data di database
         $query_update = "UPDATE users SET nama_lengkap = '$nama_lengkap', username = '$username' WHERE id_user = '$id_user'";
         if (mysqli_query($koneksi, $query_update)) {
-            // Update juga data di session
+
+            // <-- PENTING: Perbarui juga data di session! -->
             $_SESSION['nama_lengkap'] = $nama_lengkap;
             $_SESSION['username'] = $username;
+            // <-- BATAS BAGIAN PENTING -->
+
             $sukses = "Profil berhasil diperbarui!";
+            // Ambil ulang data terbaru untuk ditampilkan di form
+            $result = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = '$id_user'");
+            $admin = mysqli_fetch_assoc($result);
         } else {
             $error = "Gagal memperbarui profil.";
         }
@@ -39,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 require '../includes/header.php';
 ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
@@ -47,28 +54,39 @@ require '../includes/header.php';
 </nav>
 
 <div class="container mt-4">
-    <h2>Ubah Profil</h2>
-    <hr>
-    <?php if (isset($error)): ?>
-        <div class="alert alert-danger"><?= $error; ?></div>
-    <?php endif; ?>
-    <?php if (isset($sukses)): ?>
-        <div class="alert alert-success"><?= $sukses; ?></div>
-    <?php endif; ?>
-    <form action="profil_admin.php" method="POST">
-        <div class="mb-3">
-            <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
-            <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap"
-                value="<?= htmlspecialchars($admin['nama_lengkap']); ?>" required>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-person-fill-gear me-2"></i>Ubah Profil</h4>
+                </div>
+                <div class="card-body">
+                    <?php if (isset($error)): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($error); ?></div>
+                    <?php endif; ?>
+                    <?php if (isset($sukses)): ?>
+                        <div class="alert alert-success"><?= htmlspecialchars($sukses); ?></div>
+                    <?php endif; ?>
+
+                    <form action="profil_admin.php" method="POST">
+                        <div class="mb-3">
+                            <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap"
+                                value="<?= htmlspecialchars($admin['nama_lengkap']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                value="<?= htmlspecialchars($admin['username']); ?>" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save-fill"></i> Simpan
+                            Perubahan</button>
+                        <a href="index.php" class="btn btn-secondary">Kembali ke Dashboard</a>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username"
-                value="<?= htmlspecialchars($admin['username']); ?>" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-        <a href="index.php" class="btn btn-secondary">Kembali ke Dashboard</a>
-    </form>
+    </div>
 </div>
 
 <?php require '../includes/footer.php'; ?>
