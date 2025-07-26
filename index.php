@@ -6,7 +6,6 @@ require 'includes/header.php';
 $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_posting DESC LIMIT 4");
 ?>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.php">⚡ PT Harrindo Daya Tama</a>
@@ -26,7 +25,6 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     </div>
 </nav>
 
-<!-- HERO SECTION -->
 <div class="hero-section">
     <div class="hero-slider">
         <div class="hero-slide active"></div>
@@ -45,14 +43,22 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     </div>
 </div>
 
-<!-- JUMLAH PENGGUNA -->
-<div class="container text-center py-5" data-aos="fade-up">
-    <h4 class="text-muted">Telah Dipercaya oleh</h4>
-    <h2 class="display-5 fw-bold" id="jumlah-pengguna">...</h2>
-    <h4 class="text-muted">Pengguna Terdaftar</h4>
+<div class="container py-5">
+    <div class="row text-center">
+        <div class="col-md-6 mb-4 mb-md-0" data-aos="fade-up">
+            <h4 class="text-muted">Telah Dipercaya oleh</h4>
+            <h2 class="display-5 fw-bold" id="jumlah-pengguna">0</h2>
+            <h4 class="text-muted">Pengguna Terdaftar</h4>
+        </div>
+        <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <h4 class="text-muted">Didukung oleh</h4>
+            <h2 class="display-5 fw-bold" id="jumlah-teknisi">0</h2>
+            <h4 class="text-muted">Teknisi Handal</h4>
+        </div>
+    </div>
 </div>
 
-<!-- EVENT SECTION -->
+
 <div class="container my-5" data-aos="fade-up">
     <div class="text-center mb-5">
         <h2 class="fw-bold">Event & Berita Terkini</h2>
@@ -60,8 +66,9 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     </div>
     <div class="row g-4">
         <?php if (isset($query_events) && mysqli_num_rows($query_events) > 0): ?>
+            <?php $delay = 0; ?>
             <?php while ($event = mysqli_fetch_assoc($query_events)): ?>
-                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+                <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="<?= $delay; ?>">
                     <div class="card h-100 shadow-sm card-event">
                         <img src="uploads/events/<?= htmlspecialchars($event['gambar']); ?>" class="card-img-top"
                             alt="<?= htmlspecialchars($event['judul']); ?>">
@@ -78,6 +85,7 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
                         </div>
                     </div>
                 </div>
+                <?php $delay += 100; ?>
             <?php endwhile; ?>
         <?php else: ?>
             <p class="text-center">Belum ada event atau berita untuk ditampilkan.</p>
@@ -85,7 +93,6 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     </div>
 </div>
 
-<!-- LAYANAN DAYA -->
 <div class="bg-light">
     <div class="container text-center py-5" data-aos="fade-up">
         <h4 class="text-muted mb-3">Layanan Daya Tersedia</h4>
@@ -93,37 +100,68 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     </div>
 </div>
 
-<!-- FOOTER -->
 <footer class="bg-dark text-white text-center p-4">
     <div class="container">
         <p class="mb-0">&copy; <?= date('Y'); ?> PT Harrindo Daya Tama. All Rights Reserved.</p>
     </div>
 </footer>
 
-<!-- JS -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Jumlah Pengguna
-        fetch('jumlah_pengguna.php')
-            .then(response => response.json())
-            .then(data => {
-                const jumlahFormatted = new Intl.NumberFormat('id-ID').format(data.total);
-                document.getElementById('jumlah-pengguna').textContent = jumlahFormatted;
-            });
+        // Fungsi untuk animasi count up
+        function animateCountUp(elementId, target) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            let current = 0;
+            const step = Math.ceil(target / 50) || 1; // Pastikan step minimal 1
+            const interval = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(interval);
+                }
+                el.textContent = new Intl.NumberFormat('id-ID').format(current);
+            }, 30);
+        }
 
-        // Layanan
-        fetch('get_layanan.php')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('layanan-list');
-                container.innerHTML = '';
-                data.layanan.forEach(daya => {
-                    const span = document.createElement('span');
-                    span.className = 'badge bg-dark fs-6';
-                    span.textContent = new Intl.NumberFormat('id-ID').format(daya) + ' VA';
-                    container.appendChild(span);
+        // Fungsi untuk jumlah pengguna
+        function updateJumlahPengguna() {
+            fetch('jumlah_pengguna.php')
+                .then(response => response.json())
+                .then(data => {
+                    animateCountUp('jumlah-pengguna', parseInt(data.total));
                 });
-            });
+        }
+
+        // Fungsi untuk jumlah teknisi
+        function updateJumlahTeknisi() {
+            fetch('jumlah_teknisi.php')
+                .then(response => response.json())
+                .then(data => {
+                    animateCountUp('jumlah-teknisi', parseInt(data.total));
+                });
+        }
+
+        // Fungsi untuk layanan
+        function updateLayananTersedia() {
+            fetch('get_layanan.php')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('layanan-list');
+                    container.innerHTML = '';
+                    data.layanan.forEach(daya => {
+                        const span = document.createElement('span');
+                        span.className = 'badge bg-dark fs-6';
+                        span.textContent = new Intl.NumberFormat('id-ID').format(daya) + ' VA';
+                        container.appendChild(span);
+                    });
+                });
+        }
+
+        // Panggil semua fungsi
+        updateJumlahPengguna();
+        updateJumlahTeknisi();
+        updateLayananTersedia();
 
         // Slider Gambar
         const slides = document.querySelectorAll('.hero-slide');
