@@ -39,6 +39,11 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
             <a href="register.php" class="btn btn-lg btn-success rounded-pill px-4">
                 <i class="bi bi-person-plus-fill"></i> Bergabung Menjadi Pengguna
             </a>
+            <p class="mt-4 small">
+                Atau hubungi admin kami di WhatsApp
+                <a href="https://wa.me/6281326740142" target="_blank" class="text-white fw-bold">081326740142</a>
+                untuk bergabung.
+            </p>
         </div>
     </div>
 </div>
@@ -57,7 +62,6 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
         </div>
     </div>
 </div>
-
 
 <div class="container my-5" data-aos="fade-up">
     <div class="text-center mb-5">
@@ -113,7 +117,7 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
             const el = document.getElementById(elementId);
             if (!el) return;
             let current = 0;
-            const step = Math.ceil(target / 50) || 1; // Pastikan step minimal 1
+            const step = Math.ceil(target / 50) || 1;
             const interval = setInterval(() => {
                 current += step;
                 if (current >= target) {
