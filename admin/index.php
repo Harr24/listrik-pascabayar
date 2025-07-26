@@ -19,6 +19,17 @@ $query_tagihan = mysqli_query($koneksi, "SELECT COUNT(id_tagihan) as total_tagih
 $data_tagihan = mysqli_fetch_assoc($query_tagihan);
 $total_tagihan_belum_lunas = $data_tagihan['total_tagihan'];
 
+// --- QUERY BARU: Untuk mengambil 5 keluhan terbaru yang belum selesai ---
+$query_keluhan = "SELECT keluhan.id_keluhan, keluhan.subjek, keluhan.status, users.nama_lengkap
+                  FROM keluhan
+                  JOIN pelanggan ON keluhan.id_pelanggan = pelanggan.id_pelanggan
+                  JOIN users ON pelanggan.id_user = users.id_user
+                  WHERE keluhan.status IN ('dikirim', 'ditanggapi')
+                  ORDER BY keluhan.tanggal_dibuat DESC
+                  LIMIT 5";
+$result_keluhan = mysqli_query($koneksi, $query_keluhan);
+
+
 require '../includes/header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -79,6 +90,8 @@ require '../includes/header.php';
                                 class="bi bi-journal-text icon"></i> Laporan</a></li>
                     <li class="nav-item mb-1"><a class="nav-link" href="event.php"><i class="bi bi-newspaper icon"></i>
                             Manajemen Event</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link" href="keluhan.php"><i
+                                class="bi bi-chat-left-text-fill icon"></i> Manajemen Keluhan</a></li>
                 </ul>
             </div>
         </nav>
@@ -118,13 +131,56 @@ require '../includes/header.php';
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill me-2"></i>Grafik Pendapatan Bulanan per
-                        Golongan</h5>
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill me-2"></i>Grafik Pendapatan Bulanan per
+                                Golongan</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="grafikPendapatan"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body" style="height: 400px;">
-                    <canvas id="grafikPendapatan"></canvas>
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-chat-left-dots-fill me-2"></i>Keluhan Terbaru</h5>
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="list-group list-group-flush">
+                                <?php if (mysqli_num_rows($result_keluhan) > 0): ?>
+                                    <?php while ($keluhan = mysqli_fetch_assoc($result_keluhan)): ?>
+                                        <a href="balas_keluhan.php?id=<?= $keluhan['id_keluhan']; ?>"
+                                            class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1 text-truncate"><?= htmlspecialchars($keluhan['subjek']); ?></h6>
+                                                <?php
+                                                if ($keluhan['status'] == 'dikirim') {
+                                                    echo '<span class="badge bg-danger">Baru</span>';
+                                                } else {
+                                                    echo '<span class="badge bg-warning text-dark">Ditanggapi</span>';
+                                                }
+                                                ?>
+                                            </div>
+                                            <small class="text-muted">Dari:
+                                                <?= htmlspecialchars($keluhan['nama_lengkap']); ?></small>
+                                        </a>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <div
+                                        class="text-center p-3 text-muted d-flex flex-column justify-content-center align-items-center h-100">
+                                        <i class="bi bi-check2-circle fs-2"></i>
+                                        <p class="mt-2 mb-0">Tidak ada keluhan aktif.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="keluhan.php">Lihat Semua Keluhan</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>

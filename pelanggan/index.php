@@ -34,19 +34,28 @@ $tagihan_terbaru = mysqli_fetch_assoc($result_terbaru);
 require '../includes/header.php';
 ?>
 
-<!-- Link tambahan -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="../assets/css/pelanggan_style.css">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-info shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">⚡ DASHBOARD PELANGGAN</a>
-        <div class="ms-auto d-flex align-items-center">
-            <span class="nav-link text-white">Halo, <?= htmlspecialchars($_SESSION['nama_lengkap']); ?></span>
-            <a class="nav-link text-white ms-3" href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        <a class="navbar-brand fw-bold" href="index.php">⚡ DASHBOARD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPelanggan">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavPelanggan">
+            <div class="navbar-nav">
+                <a class="nav-link text-white" href="keluhan.php">Buat Keluhan</a>
+            </div>
+            <div class="navbar-nav ms-auto d-flex align-items-center">
+                <span class="nav-link text-white d-none d-lg-block">Halo,
+                    <?= htmlspecialchars($_SESSION['nama_lengkap']); ?></span>
+                <a class="nav-link text-white" href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            </div>
         </div>
     </div>
 </nav>
+
 
 <div class="container mt-4">
     <div class="alert alert-primary shadow-sm">
@@ -116,7 +125,6 @@ require '../includes/header.php';
                                 }
                                 ?>
                                 <br>
-                                <!-- PERUBAHAN LINK DI SINI -->
                                 <a href="detail_tagihan.php?id=<?= $row['id_tagihan']; ?>"
                                     class="btn btn-sm btn-outline-primary mt-1" title="Lihat Detail">
                                     <i class="bi bi-file-earmark-text"></i> Detail
