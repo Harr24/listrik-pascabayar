@@ -30,6 +30,10 @@ $query_keluhan = "SELECT keluhan.id_keluhan, keluhan.subjek, keluhan.status, use
 $result_keluhan = mysqli_query($koneksi, $query_keluhan);
 
 
+// --- QUERY BARU: Untuk mengambil daftar teknisi ---
+$query_teknisi = "SELECT * FROM teknisi ORDER BY nama_teknisi ASC LIMIT 5";
+$result_teknisi = mysqli_query($koneksi, $query_teknisi);
+
 require '../includes/header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -92,6 +96,8 @@ require '../includes/header.php';
                             Manajemen Event</a></li>
                     <li class="nav-item mb-1"><a class="nav-link" href="keluhan.php"><i
                                 class="bi bi-chat-left-text-fill icon"></i> Manajemen Keluhan</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link" href="teknisi.php"><i
+                                class="bi bi-person-badge-fill icon"></i> Manajemen Teknisi</a></li>
                 </ul>
             </div>
         </nav>
@@ -110,8 +116,7 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TOTAL PELANGGAN</h5>
                                     <h3 class="fw-bold"><?= $total_pelanggan; ?> Orang</h3>
-                                </div>
-                                <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div><i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -123,8 +128,7 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TAGIHAN BELUM LUNAS</h5>
                                     <h3 class="fw-bold"><?= $total_tagihan_belum_lunas; ?> Tagihan</h3>
-                                </div>
-                                <i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div><i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -138,9 +142,7 @@ require '../includes/header.php';
                             <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill me-2"></i>Grafik Pendapatan Bulanan per
                                 Golongan</h5>
                         </div>
-                        <div class="card-body">
-                            <canvas id="grafikPendapatan"></canvas>
-                        </div>
+                        <div class="card-body"><canvas id="grafikPendapatan"></canvas></div>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
@@ -156,13 +158,11 @@ require '../includes/header.php';
                                             class="list-group-item list-group-item-action">
                                             <div class="d-flex w-100 justify-content-between">
                                                 <h6 class="mb-1 text-truncate"><?= htmlspecialchars($keluhan['subjek']); ?></h6>
-                                                <?php
-                                                if ($keluhan['status'] == 'dikirim') {
+                                                <?php if ($keluhan['status'] == 'dikirim') {
                                                     echo '<span class="badge bg-danger">Baru</span>';
                                                 } else {
                                                     echo '<span class="badge bg-warning text-dark">Ditanggapi</span>';
-                                                }
-                                                ?>
+                                                } ?>
                                             </div>
                                             <small class="text-muted">Dari:
                                                 <?= htmlspecialchars($keluhan['nama_lengkap']); ?></small>
@@ -177,18 +177,45 @@ require '../includes/header.php';
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="card-footer text-center">
-                            <a href="keluhan.php">Lihat Semua Keluhan</a>
-                        </div>
+                        <div class="card-footer text-center"><a href="keluhan.php">Lihat Semua Keluhan</a></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="card shadow-sm mt-2">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-badge-fill me-2"></i>Daftar Teknisi Aktif</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <?php if (mysqli_num_rows($result_teknisi) > 0): ?>
+                            <?php while ($teknisi = mysqli_fetch_assoc($result_teknisi)):
+                                $nomor_wa_link = preg_replace('/[^0-9]/', '', $teknisi['no_wa']);
+                                if (substr($nomor_wa_link, 0, 1) === '0') {
+                                    $nomor_wa_link = '62' . substr($nomor_wa_link, 1);
+                                }
+                                ?>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold"><?= htmlspecialchars($teknisi['nama_teknisi']); ?></div>
+                                        <small class="text-muted"><?= htmlspecialchars($teknisi['area_bertugas']); ?></small>
+                                    </div>
+                                    <a href="https://wa.me/<?= $nomor_wa_link; ?>" target="_blank"
+                                        class="btn btn-sm btn-outline-success"><i class="bi bi-whatsapp"></i> Hubungi</a>
+                                </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <p class="text-center text-muted p-3">Belum ada data teknisi.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="card-footer text-center"><a href="teknisi.php">Lihat & Kelola Semua Teknisi</a></div>
             </div>
         </main>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         fetch('data_grafik.php')
@@ -197,37 +224,10 @@ require '../includes/header.php';
                 const ctx = document.getElementById('grafikPendapatan').getContext('2d');
                 new Chart(ctx, {
                     type: 'bar',
-                    data: {
-                        labels: serverData.labels,
-                        datasets: serverData.datasets
-                    },
+                    data: { labels: serverData.labels, datasets: serverData.datasets },
                     options: {
-                        scales: {
-                            x: { stacked: true },
-                            y: {
-                                stacked: true,
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function (value) {
-                                        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
-                                    }
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function (context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) label += ': ';
-                                        if (context.parsed.y !== null) {
-                                            label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(context.parsed.y);
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { callback: function (value) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value); } } } },
+                        plugins: { tooltip: { callbacks: { label: function (context) { let label = context.dataset.label || ''; if (label) label += ': '; if (context.parsed.y !== null) { label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(context.parsed.y); } return label; } } } },
                         responsive: true,
                         maintainAspectRatio: false
                     }
@@ -237,7 +237,4 @@ require '../includes/header.php';
     });
 </script>
 
-<?php
-// Panggil footer
-require '../includes/footer.php';
-?>
+<?php require '../includes/footer.php'; ?>

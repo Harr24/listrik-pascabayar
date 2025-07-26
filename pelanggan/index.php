@@ -34,9 +34,11 @@ $tagihan_terbaru = mysqli_fetch_assoc($result_terbaru);
 require '../includes/header.php';
 ?>
 
+<!-- Link tambahan -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="../assets/css/pelanggan_style.css">
 
+<!-- PENYESUAIAN NAVBAR DI SINI -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-info shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.php">⚡ DASHBOARD</a>
@@ -46,6 +48,7 @@ require '../includes/header.php';
         <div class="collapse navbar-collapse" id="navbarNavPelanggan">
             <div class="navbar-nav">
                 <a class="nav-link text-white" href="keluhan.php">Buat Keluhan</a>
+                <a class="nav-link text-white" href="hubungi_teknisi.php">Hubungi Teknisi</a>
             </div>
             <div class="navbar-nav ms-auto d-flex align-items-center">
                 <span class="nav-link text-white d-none d-lg-block">Halo,
