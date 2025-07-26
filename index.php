@@ -13,7 +13,17 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTarif" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Daftar Harga/kWh
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownTarif"
+                        id="tarif-dropdown-list">
+                        <li><a class="dropdown-item" href="#">Memuat...</a></li>
+                    </ul>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="login.php">Login</a>
                 </li>
@@ -109,79 +119,5 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
         <p class="mb-0">&copy; <?= date('Y'); ?> PT Harrindo Daya Tama. All Rights Reserved.</p>
     </div>
 </footer>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Fungsi untuk animasi count up
-        function animateCountUp(elementId, target) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            let current = 0;
-            const step = Math.ceil(target / 50) || 1;
-            const interval = setInterval(() => {
-                current += step;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(interval);
-                }
-                el.textContent = new Intl.NumberFormat('id-ID').format(current);
-            }, 30);
-        }
-
-        // Fungsi untuk jumlah pengguna
-        function updateJumlahPengguna() {
-            fetch('jumlah_pengguna.php')
-                .then(response => response.json())
-                .then(data => {
-                    animateCountUp('jumlah-pengguna', parseInt(data.total));
-                });
-        }
-
-        // Fungsi untuk jumlah teknisi
-        function updateJumlahTeknisi() {
-            fetch('jumlah_teknisi.php')
-                .then(response => response.json())
-                .then(data => {
-                    animateCountUp('jumlah-teknisi', parseInt(data.total));
-                });
-        }
-
-        // Fungsi untuk layanan
-        function updateLayananTersedia() {
-            fetch('get_layanan.php')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('layanan-list');
-                    container.innerHTML = '';
-                    data.layanan.forEach(daya => {
-                        const span = document.createElement('span');
-                        span.className = 'badge bg-dark fs-6';
-                        span.textContent = new Intl.NumberFormat('id-ID').format(daya) + ' VA';
-                        container.appendChild(span);
-                    });
-                });
-        }
-
-        // Panggil semua fungsi
-        updateJumlahPengguna();
-        updateJumlahTeknisi();
-        updateLayananTersedia();
-
-        // Slider Gambar
-        const slides = document.querySelectorAll('.hero-slide');
-        let currentSlide = 0;
-        if (slides.length > 0) {
-            function nextSlide() {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }
-            setInterval(nextSlide, 5000);
-        }
-
-        // AOS
-        AOS.init();
-    });
-</script>
 
 <?php require 'includes/footer.php'; ?>

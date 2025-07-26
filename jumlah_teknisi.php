@@ -2,12 +2,14 @@
 // jumlah_teknisi.php
 require 'config/database.php';
 
-// Query untuk menghitung total teknisi
-$query = "SELECT COUNT(id_teknisi) as total FROM teknisi";
+$query = "SELECT COUNT(id_teknisi) AS total FROM teknisi";
 $result = mysqli_query($koneksi, $query);
-$data = mysqli_fetch_assoc($result);
 
-// Mengembalikan data dalam format JSON
+$data = mysqli_fetch_assoc($result);
+if (!$data) {
+    $data = ['total' => 0];
+}
+
 header('Content-Type: application/json');
 echo json_encode($data);
-?>
+exit;
