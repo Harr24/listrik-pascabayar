@@ -83,12 +83,30 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error fetching tariff list:', error));
     }
 
+    // Fungsi BARU untuk menampilkan area layanan
+    function updateAreaLayanan() {
+        fetch('get_area.php')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('area-list');
+                if (!container) return;
+                container.innerHTML = ''; // Kosongkan dulu
+                data.area.forEach(nama_area => {
+                    const span = document.createElement('span');
+                    span.className = 'badge bg-info text-dark fs-6';
+                    span.textContent = nama_area;
+                    container.appendChild(span);
+                });
+            })
+            .catch(error => console.error('Error fetching area list:', error));
+    }
+
     // Panggil semua fungsi inisialisasi
     updateJumlahPengguna();
     updateJumlahTeknisi();
     updateLayananTersedia();
     updateDaftarHarga();
-
+    updateAreaLayanan(); // Panggil fungsi baru
 
     // Logika untuk background slider
     const slides = document.querySelectorAll('.hero-slide');

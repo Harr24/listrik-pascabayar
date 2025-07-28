@@ -111,6 +111,8 @@ $query_events = mysqli_query($koneksi, "SELECT * FROM events ORDER BY tanggal_po
     <div class="container text-center py-5" data-aos="fade-up">
         <h4 class="text-muted mb-3">Layanan Daya Tersedia</h4>
         <div id="layanan-list" class="d-flex flex-wrap justify-content-center gap-3"></div>
+        <h4 class="text-muted mb-3 mt-5">Area Layanan Kami</h4>
+        <div id="area-list" class="d-flex flex-wrap justify-content-center gap-3"></div>
     </div>
 </div>
 
