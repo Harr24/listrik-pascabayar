@@ -53,7 +53,7 @@ mysqli_stmt_bind_param($stmt, $types, ...$params);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
-// Proses pembuatan file CSV
+// --- PROSES PEMBUATAN FILE CSV ---
 $nama_file = "laporan_tagihan_" . $filter_bulan . "_" . $filter_tahun . ".csv";
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename=' . $nama_file);
@@ -62,7 +62,11 @@ $output = fopen('php://output', 'w');
 // Tulis header kolom
 fputcsv($output, ['Nama Pelanggan', 'Periode', 'Daya (VA)', 'Total Tagihan (Rp)', 'Status']);
 
-// Tulis data baris
+// --- Kalkulasi untuk rekapitulasi ---
+$rekap_per_daya = [];
+$total_pemasukan = 0;
+
+// Tulis data baris sambil menghitung rekap
 while ($row = mysqli_fetch_assoc($result)) {
     $periode = date("F Y", mktime(0, 0, 0, $row['bulan'], 1, $row['tahun']));
     $baris = [
@@ -73,7 +77,30 @@ while ($row = mysqli_fetch_assoc($result)) {
         $row['status']
     ];
     fputcsv($output, $baris);
+
+    // Hitung total hanya jika status lunas
+    if ($row['status'] == 'lunas') {
+        $daya = $row['daya'];
+        if (!isset($rekap_per_daya[$daya])) {
+            $rekap_per_daya[$daya] = 0;
+        }
+        $rekap_per_daya[$daya] += $row['total_bayar'];
+        $total_pemasukan += $row['total_bayar'];
+    }
 }
+
+// --- BAGIAN BARU: Tulis hasil rekapitulasi di bagian bawah file ---
+fputcsv($output, []); // Baris kosong sebagai pemisah
+fputcsv($output, ['REKAPITULASI PEMASUKAN (HANYA DARI TAGIHAN LUNAS)']);
+fputcsv($output, ['Golongan Daya', 'Total Pemasukan (Rp)']);
+
+ksort($rekap_per_daya); // Urutkan berdasarkan daya
+foreach ($rekap_per_daya as $daya => $total) {
+    fputcsv($output, [$daya . ' VA', $total]);
+}
+
+fputcsv($output, []); // Baris kosong
+fputcsv($output, ['TOTAL KESELURUHAN', $total_pemasukan]);
 
 fclose($output);
 exit;
