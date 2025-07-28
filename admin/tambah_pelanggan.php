@@ -8,8 +8,9 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Ambil data tarif untuk dropdown
+// Ambil data tarif dan area untuk dropdown
 $tariffs_query = mysqli_query($koneksi, "SELECT * FROM tarif ORDER BY daya ASC");
+$areas_query = mysqli_query($koneksi, "SELECT * FROM area_layanan ORDER BY nama_area ASC");
 
 // Logika saat form disubmit
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
     $nomor_meter = mysqli_real_escape_string($koneksi, $_POST['nomor_meter']);
     $id_tarif = mysqli_real_escape_string($koneksi, $_POST['id_tarif']);
+    $id_area = mysqli_real_escape_string($koneksi, $_POST['id_area']); // Ambil id_area
     $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -30,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (mysqli_query($koneksi, $query_user)) {
             $id_user_baru = mysqli_insert_id($koneksi);
 
-            $query_pelanggan = "INSERT INTO pelanggan (id_user, nomor_meter, id_tarif, alamat) VALUES ('$id_user_baru', '$nomor_meter', '$id_tarif', '$alamat')";
+            // Tambahkan id_area ke query insert
+            $query_pelanggan = "INSERT INTO pelanggan (id_user, nomor_meter, id_tarif, id_area, alamat) VALUES ('$id_user_baru', '$nomor_meter', '$id_tarif', '$id_area', '$alamat')";
             if (mysqli_query($koneksi, $query_pelanggan)) {
                 header("Location: pelanggan.php?status=sukses_tambah");
                 exit;
@@ -123,8 +126,19 @@ require '../includes/header.php';
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="alamat" class="form-label">Alamat</label>
-                                    <textarea class="form-control" id="alamat" name="alamat" rows="3"
+                                    <label for="id_area" class="form-label">Area Layanan</label>
+                                    <select class="form-select" id="id_area" name="id_area" required>
+                                        <option value="" disabled selected>-- Pilih Area Layanan --</option>
+                                        <?php while ($area = mysqli_fetch_assoc($areas_query)): ?>
+                                            <option value="<?= $area['id_area']; ?>">
+                                                <?= htmlspecialchars($area['nama_area']); ?>
+                                            </option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alamat" class="form-label">Alamat Lengkap</label>
+                                    <textarea class="form-control" id="alamat" name="alamat" rows="1"
                                         required></textarea>
                                 </div>
                             </div>

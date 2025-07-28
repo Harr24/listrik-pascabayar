@@ -10,25 +10,18 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin' || !isset($_GE
 
 $id_pelanggan = $_GET['id'];
 
-// Ambil data pelanggan yang akan di-edit
-$query = "SELECT pelanggan.*, users.nama_lengkap, users.username
-          FROM pelanggan
-          JOIN users ON pelanggan.id_user = users.id_user
-          WHERE pelanggan.id_pelanggan = '$id_pelanggan'";
-$result = mysqli_query($koneksi, $query);
-$pelanggan = mysqli_fetch_assoc($result);
-
-// Ambil semua data tarif untuk dropdown
-$tariffs_query = mysqli_query($koneksi, "SELECT * FROM tarif ORDER BY daya ASC");
-
 // Logika saat form disubmit untuk update
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
     $username = mysqli_real_escape_string($koneksi, $_POST['username']);
     $nomor_meter = mysqli_real_escape_string($koneksi, $_POST['nomor_meter']);
     $id_tarif = mysqli_real_escape_string($koneksi, $_POST['id_tarif']);
+    $id_area = mysqli_real_escape_string($koneksi, $_POST['id_area']); // Ambil id_area
     $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
-    $id_user = $pelanggan['id_user'];
+
+    // Ambil id_user dari database untuk memastikan tidak salah
+    $id_user_query = mysqli_query($koneksi, "SELECT id_user FROM pelanggan WHERE id_pelanggan='$id_pelanggan'");
+    $id_user = mysqli_fetch_assoc($id_user_query)['id_user'];
 
     // Cek duplikasi username
     $check_username = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username = '$username' AND id_user != '$id_user'");
@@ -38,8 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 1. Update tabel users
         $query_update_user = "UPDATE users SET nama_lengkap = '$nama_lengkap', username = '$username' WHERE id_user = '$id_user'";
 
-        // 2. Update tabel pelanggan
-        $query_update_pelanggan = "UPDATE pelanggan SET nomor_meter = '$nomor_meter', id_tarif = '$id_tarif', alamat = '$alamat' WHERE id_pelanggan = '$id_pelanggan'";
+        // 2. Update tabel pelanggan, tambahkan id_area
+        $query_update_pelanggan = "UPDATE pelanggan SET nomor_meter = '$nomor_meter', id_tarif = '$id_tarif', id_area = '$id_area', alamat = '$alamat' WHERE id_pelanggan = '$id_pelanggan'";
 
         if (mysqli_query($koneksi, $query_update_user) && mysqli_query($koneksi, $query_update_pelanggan)) {
             header("Location: pelanggan.php?status=sukses_edit");
@@ -50,32 +43,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Ambil data pelanggan yang akan di-edit
+$query = "SELECT pelanggan.*, users.nama_lengkap, users.username
+          FROM pelanggan
+          JOIN users ON pelanggan.id_user = users.id_user
+          WHERE pelanggan.id_pelanggan = '$id_pelanggan'";
+$result = mysqli_query($koneksi, $query);
+$pelanggan = mysqli_fetch_assoc($result);
+
+// Ambil semua data tarif dan area untuk dropdown
+$tariffs_query = mysqli_query($koneksi, "SELECT * FROM tarif ORDER BY daya ASC");
+$areas_query = mysqli_query($koneksi, "SELECT * FROM area_layanan ORDER BY nama_area ASC");
+
+
 require '../includes/header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">⚡ ADMIN PANEL</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i> Halo, <?= htmlspecialchars($_SESSION['nama_lengkap']); ?>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="profil_admin.php">Ubah Profil</a></li>
-                        <li><a class="dropdown-item" href="ubah_password.php">Ubah Password</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
 </nav>
 
 <div class="container mt-4">
@@ -126,8 +111,20 @@ require '../includes/header.php';
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="alamat" class="form-label">Alamat</label>
-                                    <textarea class="form-control" id="alamat" name="alamat" rows="2"
+                                    <label for="id_area" class="form-label">Area Layanan</label>
+                                    <select class="form-select" id="id_area" name="id_area" required>
+                                        <option value="" disabled>-- Pilih Area Layanan --</option>
+                                        <?php while ($area = mysqli_fetch_assoc($areas_query)): ?>
+                                            <option value="<?= $area['id_area']; ?>"
+                                                <?= ($area['id_area'] == $pelanggan['id_area']) ? 'selected' : ''; ?>>
+                                                <?= htmlspecialchars($area['nama_area']); ?>
+                                            </option>
+                                        <?php endwhile; ?>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alamat" class="form-label">Alamat Lengkap</label>
+                                    <textarea class="form-control" id="alamat" name="alamat" rows="1"
                                         required><?= htmlspecialchars($pelanggan['alamat']); ?></textarea>
                                 </div>
                             </div>

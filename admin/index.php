@@ -19,7 +19,7 @@ $query_tagihan = mysqli_query($koneksi, "SELECT COUNT(id_tagihan) as total_tagih
 $data_tagihan = mysqli_fetch_assoc($query_tagihan);
 $total_tagihan_belum_lunas = $data_tagihan['total_tagihan'];
 
-// --- QUERY BARU: Untuk mengambil 5 keluhan terbaru yang belum selesai ---
+// Query untuk mengambil 5 keluhan terbaru yang belum selesai
 $query_keluhan = "SELECT keluhan.id_keluhan, keluhan.subjek, keluhan.status, users.nama_lengkap
                   FROM keluhan
                   JOIN pelanggan ON keluhan.id_pelanggan = pelanggan.id_pelanggan
@@ -30,7 +30,7 @@ $query_keluhan = "SELECT keluhan.id_keluhan, keluhan.subjek, keluhan.status, use
 $result_keluhan = mysqli_query($koneksi, $query_keluhan);
 
 
-// --- QUERY BARU: Untuk mengambil daftar teknisi ---
+// Query untuk mengambil daftar teknisi
 $query_teknisi = "SELECT * FROM teknisi ORDER BY nama_teknisi ASC LIMIT 5";
 $result_teknisi = mysqli_query($koneksi, $query_teknisi);
 
@@ -98,6 +98,8 @@ require '../includes/header.php';
                                 class="bi bi-chat-left-text-fill icon"></i> Manajemen Keluhan</a></li>
                     <li class="nav-item mb-1"><a class="nav-link" href="teknisi.php"><i
                                 class="bi bi-person-badge-fill icon"></i> Manajemen Teknisi</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link" href="area_layanan.php"><i
+                                class="bi bi-geo-alt-fill icon"></i> Manajemen Area</a></li>
                 </ul>
             </div>
         </nav>
@@ -116,7 +118,8 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TOTAL PELANGGAN</h5>
                                     <h3 class="fw-bold"><?= $total_pelanggan; ?> Orang</h3>
-                                </div><i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                                <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -128,7 +131,8 @@ require '../includes/header.php';
                                 <div>
                                     <h5 class="card-title">TAGIHAN BELUM LUNAS</h5>
                                     <h3 class="fw-bold"><?= $total_tagihan_belum_lunas; ?> Tagihan</h3>
-                                </div><i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                                <i class="bi bi-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
                             </div>
                         </div>
                     </div>
@@ -158,11 +162,13 @@ require '../includes/header.php';
                                             class="list-group-item list-group-item-action">
                                             <div class="d-flex w-100 justify-content-between">
                                                 <h6 class="mb-1 text-truncate"><?= htmlspecialchars($keluhan['subjek']); ?></h6>
-                                                <?php if ($keluhan['status'] == 'dikirim') {
+                                                <?php
+                                                if ($keluhan['status'] == 'dikirim') {
                                                     echo '<span class="badge bg-danger">Baru</span>';
                                                 } else {
                                                     echo '<span class="badge bg-warning text-dark">Ditanggapi</span>';
-                                                } ?>
+                                                }
+                                                ?>
                                             </div>
                                             <small class="text-muted">Dari:
                                                 <?= htmlspecialchars($keluhan['nama_lengkap']); ?></small>

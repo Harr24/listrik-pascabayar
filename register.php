@@ -2,8 +2,10 @@
 session_start();
 require 'config/database.php';
 
-// Ambil data tarif untuk dropdown
+// Ambil data tarif dan area untuk dropdown
 $tariffs_query = mysqli_query($koneksi, "SELECT * FROM tarif");
+$areas_query = mysqli_query($koneksi, "SELECT * FROM area_layanan ORDER BY nama_area ASC");
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
@@ -11,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = mysqli_real_escape_string($koneksi, $_POST['password']);
     $nomor_meter = mysqli_real_escape_string($koneksi, $_POST['nomor_meter']);
     $id_tarif = mysqli_real_escape_string($koneksi, $_POST['id_tarif']);
+    $id_area = mysqli_real_escape_string($koneksi, $_POST['id_area']); // Ambil id_area
     $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -22,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $query_user = "INSERT INTO users (username, password, nama_lengkap, role) VALUES ('$username', '$hashed_password', '$nama_lengkap', 'pelanggan')";
         if (mysqli_query($koneksi, $query_user)) {
             $id_user_baru = mysqli_insert_id($koneksi);
-            $query_pelanggan = "INSERT INTO pelanggan (id_user, nomor_meter, id_tarif, alamat) VALUES ('$id_user_baru', '$nomor_meter', '$id_tarif', '$alamat')";
+            // Tambahkan id_area ke query insert
+            $query_pelanggan = "INSERT INTO pelanggan (id_user, nomor_meter, id_tarif, id_area, alamat) VALUES ('$id_user_baru', '$nomor_meter', '$id_tarif', '$id_area', '$alamat')";
             if (mysqli_query($koneksi, $query_pelanggan)) {
                 header("Location: login.php?status=sukses_registrasi");
                 exit();
@@ -47,10 +51,11 @@ require 'includes/header.php';
     }
 
     .register-wrapper {
-        height: 100vh;
+        min-height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 20px 0;
         backdrop-filter: blur(6px);
     }
 
@@ -73,10 +78,15 @@ require 'includes/header.php';
         border: none;
     }
 
-    .form-control {
+    .form-control,
+    .form-select {
         background-color: rgba(255, 255, 255, 0.1);
         color: #fff;
         border: 1px solid #555;
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cccccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     }
 
     .form-control::placeholder {
@@ -139,7 +149,7 @@ require 'includes/header.php';
             </div>
 
             <div class="mb-3">
-                <select class="form-select form-control bg-dark text-white" name="id_tarif" required>
+                <select class="form-select form-control" name="id_tarif" required>
                     <option value="" disabled selected>-- Pilih Golongan Tarif --</option>
                     <?php while ($tarif = mysqli_fetch_assoc($tariffs_query)): ?>
                         <option value="<?= $tarif['id_tarif']; ?>">
@@ -151,7 +161,18 @@ require 'includes/header.php';
             </div>
 
             <div class="mb-3">
-                <textarea class="form-control" name="alamat" placeholder="Alamat lengkap..." rows="3"
+                <select class="form-select form-control" name="id_area" required>
+                    <option value="" disabled selected>-- Pilih Area Layanan --</option>
+                    <?php while ($area = mysqli_fetch_assoc($areas_query)): ?>
+                        <option value="<?= $area['id_area']; ?>">
+                            <?= htmlspecialchars($area['nama_area']); ?>
+                        </option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <textarea class="form-control" name="alamat" placeholder="Alamat lengkap..." rows="2"
                     required></textarea>
             </div>
 
